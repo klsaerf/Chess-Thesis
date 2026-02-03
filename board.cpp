@@ -122,10 +122,16 @@ bool Board::makeMove(const int begin, const int end) {
             break;
     }
 
+    const Move move(begin, end);
+
     // If the piece cannot move there, return false
-    if (std::ranges::find(moves, std::pair(begin, end)) == moves.end()) {
+    if (std::ranges::find(moves, move) == moves.end()) {
         return false;
     }
+
+    if (attemptCastling(move)) return true;
+
+    invalidateCastling(move);
 
     // Swap the end piece for the beginning piece, and remove the beginning piece
     board_.at(end) = board_.at(begin);
@@ -142,7 +148,7 @@ bool Board::makeMove(const int begin, const int end) {
     return true;
 }
 
-void Board::getAvailableMoves() {
+void Board::getAvailableMoves() const {
     std::vector<Move> moves;
 
     for (int i = 0; i < BOARD_SIZE; i++) {
@@ -169,6 +175,12 @@ void Board::getAvailableMoves() {
                 break;
         }
     }
+
+    std::cout << std::endl;
+    for (auto move: moves) {
+        std::cout << move.first << ' ' << move.second << std::endl;
+    }
+    std::cout << moves.size() << std::endl;
 }
 
 void Board::getPawnMoves(std::vector<Move>& moves, const int index) const {
@@ -237,6 +249,7 @@ void Board::getBishopMoves(std::vector<Move>& moves, const int index) const {
     const int x = index % BOARD_LENGTH;
     const int y = index / BOARD_LENGTH;
 
+    // Flags to stop looking for in a given direction
     bool ppFlag = true;
     bool pnFlag = true;
     bool npFlag = true;
@@ -256,6 +269,7 @@ void Board::getRookMoves(std::vector<Move>& moves, const int index) const {
     const int x = index % BOARD_LENGTH;
     const int y = index / BOARD_LENGTH;
 
+    // Flags to stop looking for in a given direction
     bool pvFlag = true;
     bool nvFlag = true;
     bool phFlag = true;
@@ -263,13 +277,14 @@ void Board::getRookMoves(std::vector<Move>& moves, const int index) const {
 
     for (int i = 1; i < BOARD_LENGTH; i++) {
         if (pvFlag) canMove(index, x + i, y, color, moves, pvFlag);
-        if (nvFlag) canMove(index, x + i, y, color, moves, nvFlag);
+        if (nvFlag) canMove(index, x - i, y, color, moves, nvFlag);
         if (phFlag) canMove(index, x, y + i, color, moves, phFlag);
         if (nhFlag) canMove(index, x, y - i, color, moves, nhFlag);
     }
 }
 
 void Board::getQueenMoves(std::vector<Move>& moves, const int index) const {
+    // Queen is rook and bishop combined
     getBishopMoves(moves, index);
     getRookMoves(moves, index);
 }
@@ -280,6 +295,8 @@ void Board::getKingMoves(std::vector<Move>& moves, const int index) const {
     const int x = index % BOARD_LENGTH;
     const int y = index / BOARD_LENGTH;
 
+    // Check for 3x3 area centered around the king.
+    // The king's own square will always fail, since it'll be same color as itself.
     for (int i =-1; i <= 1; i++) {
         for (int j = -1; j <= 1; j++) {
             if (isInBounds(x + i, y + j) && getColor(board_.at(x + i + (y + j) * BOARD_LENGTH)) != color) {
@@ -287,18 +304,128 @@ void Board::getKingMoves(std::vector<Move>& moves, const int index) const {
             }
         }
     }
+
+    // Check for castling moves
+    canCastle(moves, index);
 }
 
 void Board::canMove(const int index, const int x, const int y, const Color color, std::vector<Move>& moves, bool& flag) const {
-    const bool inBounds = isInBounds(x, y);
-    if (!inBounds) {
+    // If the current square is out of bounds, return false and set flag to false
+    if (const bool inBounds = isInBounds(x, y); !inBounds) {
         flag = false;
         return;
     }
 
     const Color targetColor = getColor(board_.at(x + y * BOARD_LENGTH));
 
+    // If the target square is not of its color, it means either empty or opponent piece
     if (targetColor != color) moves.emplace_back(index, x + y * BOARD_LENGTH);
 
+    // Update the flag so it only keeps looking only if the square is empty
     flag = targetColor == EMPTY;
+}
+
+void Board::canCastle(std::vector<Move> &moves, const int index) const {
+    // Check if the king can castle and if it's still on starting square
+    if (whiteCanCastleShort_ && index == 4) {
+        // If the squares between are empty and the last square has the rook
+        if (board_.at(5) == '0' && board_.at(6) == '0' && board_.at(7) == 'R') {
+            moves.emplace_back(WHITE_CASTLE_SHORT);
+        }
+    }
+    if (whiteCanCastleLong_ && index == 4) {
+        if (board_.at(3) == '0' && board_.at(2) == '0' && board_.at(1) == '0' && board_.at(0) == 'R') {
+            moves.emplace_back(WHITE_CASTLE_LONG);
+        }
+    }
+    if (blackCanCastleShort_ && index == 60) {
+        if (board_.at(61) == '0' && board_.at(62) == '0' && board_.at(63) == 'r') {
+            moves.emplace_back(BLACK_CASTLE_SHORT);
+        }
+    }
+    if (blackCanCastleLong_ && index == 60) {
+        if (board_.at(59) == '0' && board_.at(58) == '0' && board_.at(57) == '0' && board_.at(56) == 'r') {
+            moves.emplace_back(BLACK_CASTLE_LONG);
+        }
+    }
+}
+
+bool Board::attemptCastling(const Move &move) {
+    // If the given move is castling, update the squares accordingly.
+    if (move == WHITE_CASTLE_SHORT) {
+        board_.at(4) = '0';
+        board_.at(5) = 'R';
+        board_.at(6) = 'K';
+        board_.at(7) = '0';
+        whiteCanCastleShort_ = false;
+        whiteCanCastleLong_ = false;
+        return true;
+    }
+    if (move == WHITE_CASTLE_LONG) {
+        board_.at(0) = '0';
+        // index 1 will be '0' before and after castling, so no need to update it
+        board_.at(2) = 'K';
+        board_.at(3) = 'R';
+        board_.at(4) = '0';
+        whiteCanCastleShort_ = false;
+        whiteCanCastleLong_ = false;
+        return true;
+    }
+    if (move == BLACK_CASTLE_SHORT) {
+        board_.at(60) = '0';
+        board_.at(61) = 'r';
+        board_.at(62) = 'k';
+        board_.at(63) = '0';
+        blackCanCastleShort_ = false;
+        blackCanCastleLong_ = false;
+        return true;
+    }
+    if (move == BLACK_CASTLE_LONG) {
+        board_.at(56) = '0';
+        // index 57 will be '0' before and after castling, so no need to update it
+        board_.at(58) = 'k';
+        board_.at(59) = 'r';
+        board_.at(60) = '0';
+        blackCanCastleShort_ = false;
+        blackCanCastleLong_ = false;
+        return true;
+    }
+    return false;
+}
+
+void Board::invalidateCastling(const Move &move) {
+    // If all flags are false, no need to check further
+    if (!(whiteCanCastleShort_ || whiteCanCastleLong_ || blackCanCastleShort_ || blackCanCastleLong_)) {
+        return;
+    }
+
+    // If the piece moving is in its starting position, and it is either king or rook
+    if (board_.at(move.first) == 'K' && move.first == 4) {
+        // A king move invalidates both castling rights
+        whiteCanCastleShort_ = false;
+        whiteCanCastleLong_ = false;
+        return;
+    }
+    if (board_.at(move.first) == 'k' && move.first == 60) {
+        blackCanCastleShort_ = false;
+        blackCanCastleLong_ = false;
+        return;
+    }
+    if (board_.at(move.first) == 'R' && move.first == 7) {
+        // A rook move only invalidates its castling side rights
+        whiteCanCastleShort_ = false;
+        return;
+    }
+    if (board_.at(move.first) == 'R' && move.first == 0) {
+        whiteCanCastleLong_ = false;
+        return;
+    }
+    if (board_.at(move.first) == 'r' && move.first == 63) {
+        blackCanCastleShort_ = false;
+        return;
+    }
+    if (board_.at(move.first) == 'R' && move.first == 56) {
+        blackCanCastleLong_ = false;
+        return;
+    }
 }

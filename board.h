@@ -13,6 +13,11 @@ using Move = std::pair<int, int>;
 const int BOARD_LENGTH = 8;
 const int BOARD_SIZE = BOARD_LENGTH * BOARD_LENGTH;
 
+const Move WHITE_CASTLE_SHORT(4, BOARD_SIZE);
+const Move WHITE_CASTLE_LONG(4, BOARD_SIZE + 1);
+const Move BLACK_CASTLE_SHORT((BOARD_SIZE - BOARD_LENGTH + 4), BOARD_SIZE);
+const Move BLACK_CASTLE_LONG((BOARD_SIZE - BOARD_LENGTH + 4), BOARD_SIZE + 1);
+
 // Color of the pieces
 enum Color { WHITE, BLACK, EMPTY };
 
@@ -33,7 +38,7 @@ public:
     // Otherwise, does nothing and returns false.
     bool makeMove(int begin, int end);
 
-    void getAvailableMoves();
+    void getAvailableMoves() const;
 
 private:
     // The board structure
@@ -73,6 +78,15 @@ private:
     // The move is only added if the target square is in bounds and the target square has a different
     // color than the index color.
     void canMove(int index, int x, int y, Color color, std::vector<Move>& moves, bool& flag) const;
+
+    // Adds castling moves to moves vector if the given king can castle either long or short
+    void canCastle(std::vector<Move>& moves, int index) const;
+
+    // Attempts to castle, returns true if successful, false otherwise
+    bool attemptCastling(const Move &move);
+
+    // If king or rook makes a non-castle move, invalidates castling rights accordingly.
+    void invalidateCastling(const Move& move);
 };
 
 
