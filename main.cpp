@@ -5,7 +5,8 @@
 
 #include <iostream>
 #include <vector>
-#include "board.h"
+#include "chessboard.h"
+#include "evaluator.h"
 
 // Splits a given string for the given delimiter.
 // Returns the split words in a vector.
@@ -54,7 +55,7 @@ int coordinateToIndex(const std::string& coord) {
 // Main function of the program.
 int main() {
 
-    Board board;
+    ChessBoard board;
 
     std::string input;
 
@@ -82,7 +83,9 @@ int main() {
         const int begin = coordinateToIndex(coords[0]);
         const int end = coordinateToIndex(coords[1]);
 
-        bool isMoveMade = board.makeMove(begin, end);
+        const Move move(begin, end);
+
+        bool isMoveMade = board.makeMove(move);
 
         if (!isMoveMade) {
             std::cout << "No move could be made" << std::endl;

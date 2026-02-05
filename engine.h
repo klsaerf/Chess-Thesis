@@ -5,7 +5,7 @@
 #ifndef CHESS_THESIS_ENGINE_H
 #define CHESS_THESIS_ENGINE_H
 
-#include "board.h"
+#include "chessboard.h"
 #include "evaluator.h"
 
 class Engine {

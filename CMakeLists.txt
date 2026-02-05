@@ -4,8 +4,8 @@ project(chess_thesis)
 set(CMAKE_CXX_STANDARD 23)
 
 add_executable(chess_thesis main.cpp
-        board.cpp
-        board.h
+        chessboard.cpp
+        chessboard.h
         engine.cpp
         engine.h
         evaluator.cpp

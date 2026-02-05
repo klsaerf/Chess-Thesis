@@ -5,28 +5,38 @@
 #ifndef CHESS_THESIS_BOARD_H
 #define CHESS_THESIS_BOARD_H
 
+#include <cctype>
 #include <vector>
 
+// Aliases
 using Move = std::pair<int, int>;
+using Board = std::vector<char>;
 
 // Board constants
-const int BOARD_LENGTH = 8;
-const int BOARD_SIZE = BOARD_LENGTH * BOARD_LENGTH;
+constexpr int BOARD_LENGTH = 8;
+constexpr int BOARD_SIZE = BOARD_LENGTH * BOARD_LENGTH;
 
-const Move WHITE_CASTLE_SHORT(4, BOARD_SIZE);
-const Move WHITE_CASTLE_LONG(4, BOARD_SIZE + 1);
-const Move BLACK_CASTLE_SHORT((BOARD_SIZE - BOARD_LENGTH + 4), BOARD_SIZE);
-const Move BLACK_CASTLE_LONG((BOARD_SIZE - BOARD_LENGTH + 4), BOARD_SIZE + 1);
+// Castling constants
+constexpr Move WHITE_CASTLE_SHORT(4, BOARD_SIZE);
+constexpr Move WHITE_CASTLE_LONG(4, BOARD_SIZE + 1);
+constexpr Move BLACK_CASTLE_SHORT(60, BOARD_SIZE);
+constexpr Move BLACK_CASTLE_LONG(60, BOARD_SIZE + 1);
 
 // Color of the pieces
 enum Color { WHITE, BLACK, EMPTY };
 
-// Board Class
+// Returns the color of the piece
+inline Color getColor(const char piece) {
+    if (piece == '0') return EMPTY;
+    return (isupper(piece)) ? WHITE : BLACK;
+}
+
+// ChessBoard Class
 // Handles the chess board related functionality such as printing the board, making moves and more.
-class Board {
+class ChessBoard {
 public:
-    Board();
-    virtual ~Board() = default;
+    ChessBoard();
+    virtual ~ChessBoard() = default;
 
     // Prints the board.
     // The board is printed top down (White pieces are at the bottom).
@@ -36,14 +46,18 @@ public:
     // Attempts to make a move.
     // If it can make a move, makes the move and returns true.
     // Otherwise, does nothing and returns false.
-    bool makeMove(int begin, int end);
+    bool makeMove(const Move& move);
 
-    void getAvailableMoves() const;
+    // Gets all the available moves on the board.
+    void getAvailableMoves(std::vector<Move>& moves) const;
+
+    // Returns the board
+    Board getBoard() const;
 
 private:
     // The board structure
     // Contains the pieces as chars along one dimension for easier management.
-    std::vector<char> board_;
+    Board board_;
 
     // -- Flags for castling for both sides and colors. --
 

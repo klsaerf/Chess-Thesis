@@ -3,20 +3,15 @@
  * Date  : 28/01/2026
  */
 
-#include "board.h"
+#include "chessboard.h"
 #include <iostream>
 
-// Returns the color of the piece
-Color getColor(const char piece) {
-    if (piece == '0') return EMPTY;
-    return (isupper(piece)) ? WHITE : BLACK;
-}
 
 bool isInBounds(const int x, const int y) {
     return x >= 0 && x < BOARD_LENGTH && y >= 0 && y < BOARD_LENGTH;
 }
 
-Board::Board(): whiteCanCastleShort_(true), whiteCanCastleLong_(true),
+ChessBoard::ChessBoard(): whiteCanCastleShort_(true), whiteCanCastleLong_(true),
                 blackCanCastleShort_(true), blackCanCastleLong_(true) {
     board_.reserve(BOARD_SIZE);
 
@@ -67,7 +62,7 @@ Board::Board(): whiteCanCastleShort_(true), whiteCanCastleLong_(true),
     }
 }
 
-void Board::printBoard() const {
+void ChessBoard::printBoard() const {
     // Print the board from top down, row by row
     for (int i = BOARD_LENGTH - 1; i >= 0; i--) {
         // Print the ranks of the board
@@ -83,9 +78,12 @@ void Board::printBoard() const {
     for (char i = 'a'; i <= 'h'; i++) {
         std::cout << i << ' ';
     }
+    std::cout << std::endl;
 }
 
-bool Board::makeMove(const int begin, const int end) {
+bool ChessBoard::makeMove(const Move& move) {
+    const int begin = move.first;
+    const int end = move.second;
     // If the begin or end is less than 0, that means the coords inputted were faulty.
     // A piece cannot move if the beginning and the ending squares are the same
     if (begin < 0 || end < 0 || begin == end) {
@@ -122,8 +120,6 @@ bool Board::makeMove(const int begin, const int end) {
             break;
     }
 
-    const Move move(begin, end);
-
     // If the piece cannot move there, return false
     if (std::ranges::find(moves, move) == moves.end()) {
         return false;
@@ -148,9 +144,7 @@ bool Board::makeMove(const int begin, const int end) {
     return true;
 }
 
-void Board::getAvailableMoves() const {
-    std::vector<Move> moves;
-
+void ChessBoard::getAvailableMoves(std::vector<Move>& moves) const {
     for (int i = 0; i < BOARD_SIZE; i++) {
         switch (const char piece = board_.at(i); toupper(piece)) {
             case 'P':
@@ -175,15 +169,13 @@ void Board::getAvailableMoves() const {
                 break;
         }
     }
-
-    std::cout << std::endl;
-    for (auto move: moves) {
-        std::cout << move.first << ' ' << move.second << std::endl;
-    }
-    std::cout << moves.size() << std::endl;
 }
 
-void Board::getPawnMoves(std::vector<Move>& moves, const int index) const {
+std::vector<char> ChessBoard::getBoard() const {
+    return board_;
+}
+
+void ChessBoard::getPawnMoves(std::vector<Move>& moves, const int index) const {
     const Color color = getColor(board_.at(index));
     const Color oppositeColor = color == WHITE ? BLACK : WHITE;
     // The direction of the pawn
@@ -219,7 +211,7 @@ void Board::getPawnMoves(std::vector<Move>& moves, const int index) const {
     }
 }
 
-void Board::getKnightMoves(std::vector<Move>& moves, const int index) const {
+void ChessBoard::getKnightMoves(std::vector<Move>& moves, const int index) const {
     const Color color = getColor(board_.at(index));
 
     const int x = index % BOARD_LENGTH;
@@ -243,7 +235,7 @@ void Board::getKnightMoves(std::vector<Move>& moves, const int index) const {
     knightMove(index, x - 1, y - 2, moves, color);
 }
 
-void Board::getBishopMoves(std::vector<Move>& moves, const int index) const {
+void ChessBoard::getBishopMoves(std::vector<Move>& moves, const int index) const {
     const Color color = getColor(board_.at(index));
 
     const int x = index % BOARD_LENGTH;
@@ -263,7 +255,7 @@ void Board::getBishopMoves(std::vector<Move>& moves, const int index) const {
     }
 }
 
-void Board::getRookMoves(std::vector<Move>& moves, const int index) const {
+void ChessBoard::getRookMoves(std::vector<Move>& moves, const int index) const {
     const Color color = getColor(board_.at(index));
 
     const int x = index % BOARD_LENGTH;
@@ -283,13 +275,13 @@ void Board::getRookMoves(std::vector<Move>& moves, const int index) const {
     }
 }
 
-void Board::getQueenMoves(std::vector<Move>& moves, const int index) const {
+void ChessBoard::getQueenMoves(std::vector<Move>& moves, const int index) const {
     // Queen is rook and bishop combined
     getBishopMoves(moves, index);
     getRookMoves(moves, index);
 }
 
-void Board::getKingMoves(std::vector<Move>& moves, const int index) const {
+void ChessBoard::getKingMoves(std::vector<Move>& moves, const int index) const {
     const Color color = getColor(board_.at(index));
 
     const int x = index % BOARD_LENGTH;
@@ -309,7 +301,7 @@ void Board::getKingMoves(std::vector<Move>& moves, const int index) const {
     canCastle(moves, index);
 }
 
-void Board::canMove(const int index, const int x, const int y, const Color color, std::vector<Move>& moves, bool& flag) const {
+void ChessBoard::canMove(const int index, const int x, const int y, const Color color, std::vector<Move>& moves, bool& flag) const {
     // If the current square is out of bounds, return false and set flag to false
     if (const bool inBounds = isInBounds(x, y); !inBounds) {
         flag = false;
@@ -325,7 +317,7 @@ void Board::canMove(const int index, const int x, const int y, const Color color
     flag = targetColor == EMPTY;
 }
 
-void Board::canCastle(std::vector<Move> &moves, const int index) const {
+void ChessBoard::canCastle(std::vector<Move> &moves, const int index) const {
     // Check if the king can castle and if it's still on starting square
     if (whiteCanCastleShort_ && index == 4) {
         // If the squares between are empty and the last square has the rook
@@ -350,7 +342,7 @@ void Board::canCastle(std::vector<Move> &moves, const int index) const {
     }
 }
 
-bool Board::attemptCastling(const Move &move) {
+bool ChessBoard::attemptCastling(const Move &move) {
     // If the given move is castling, update the squares accordingly.
     if (move == WHITE_CASTLE_SHORT) {
         board_.at(4) = '0';
@@ -393,7 +385,7 @@ bool Board::attemptCastling(const Move &move) {
     return false;
 }
 
-void Board::invalidateCastling(const Move &move) {
+void ChessBoard::invalidateCastling(const Move &move) {
     // If all flags are false, no need to check further
     if (!(whiteCanCastleShort_ || whiteCanCastleLong_ || blackCanCastleShort_ || blackCanCastleLong_)) {
         return;
