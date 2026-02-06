@@ -5,17 +5,16 @@
 #include "evaluator.h"
 #include <cctype>
 
-int Evaluator::evaluate(const ChessBoard &chess_board) {
-    const Board board = chess_board.getBoard();
+int Evaluator::evaluate(const ChessBoard &chessBoard) {
     int evaluation = 0;
 
     // Loop through all pieces, add to eval if white, subtract if black
     for (int i = 0; i < BOARD_SIZE; i++) {
-        if (board.at(i) == '0') {
+        if (chessBoard.board.at(i) == '0') {
             continue;
         }
-        const int color = getColor(board.at(i)) == WHITE ? 1 : -1;
-        switch (tolower(board.at(i))) {
+        const int color = getColor(chessBoard.board.at(i)) == WHITE ? 1 : -1;
+        switch (tolower(chessBoard.board.at(i))) {
             case 'p':
                 evaluation += PAWN_WEIGHT * color;
                 evaluation += (color == 1 ? WHITE_PAWN_CENTRALITY.at(i) : BLACK_PAWN_CENTRALITY.at(i)) * color;

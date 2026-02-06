@@ -10,7 +10,7 @@
 
 // Aliases
 using Move = std::pair<int, int>;
-using Board = std::vector<char>;
+// using Board = std::vector<char>;
 
 // Board constants
 constexpr int BOARD_LENGTH = 8;
@@ -31,76 +31,80 @@ inline Color getColor(const char piece) {
     return (isupper(piece)) ? WHITE : BLACK;
 }
 
-// ChessBoard Class
-// Handles the chess board related functionality such as printing the board, making moves and more.
-class ChessBoard {
-public:
+// ChessBoard struct
+// Reserves the memory for the board on initialization.
+// Tracks the board and the castling states.
+struct ChessBoard {
     ChessBoard();
-    virtual ~ChessBoard() = default;
+
+    std::vector<char> board;
+
+    bool whiteCanCastleShort;
+    bool whiteCanCastleLong;
+
+    bool blackCanCastleShort;
+    bool blackCanCastleLong;
+
+};
+
+// ChessBoardFunctions static class
+// Handles the chess board related functionality such as printing the board, making moves and more.
+class ChessBoardFunctions {
+public:
+    ChessBoardFunctions() = delete;
+
+    // Initializes the board
+    // White pieces are represented with uppercase letters, and black pieces with lowercase.
+    static void initBoard(ChessBoard& chessBoard);
 
     // Prints the board.
     // The board is printed top down (White pieces are at the bottom).
     // The coordinates for ranks and files are printed alongside the board.
-    void printBoard() const;
+    static void printBoard(const ChessBoard& chessBoard);
 
     // Attempts to make a move.
     // If it can make a move, makes the move and returns true.
     // Otherwise, does nothing and returns false.
-    bool makeMove(const Move& move);
+    static bool makeMove(ChessBoard& chessBoard, const Move& move);
 
     // Gets all the available moves on the board.
-    void getAvailableMoves(std::vector<Move>& moves) const;
-
-    // Returns the board
-    Board getBoard() const;
+    static void getAvailableMoves(const ChessBoard& chessBoard, std::vector<Move>& moves);
 
 private:
-    // The board structure
-    // Contains the pieces as chars along one dimension for easier management.
-    Board board_;
-
-    // -- Flags for castling for both sides and colors. --
-
-    bool whiteCanCastleShort_;
-    bool whiteCanCastleLong_;
-
-    bool blackCanCastleShort_;
-    bool blackCanCastleLong_;
-
     // -- Private functions for retrieving the possible moves of the given piece. --
 
     // Extend the move vector with the moves a pawn can make on square index
-    void getPawnMoves(std::vector<Move>& moves, int index) const;
+    static void getPawnMoves(const ChessBoard& chessBoard, std::vector<Move>& moves, int index);
 
     // Extend the move vector with the moves a knight can make on square index
-    void getKnightMoves(std::vector<Move>& moves, int index) const;
+    static void getKnightMoves(const ChessBoard& chessBoard, std::vector<Move>& moves, int index);
 
     // Extend the move vector with the moves a bishop can make on square index
-    void getBishopMoves(std::vector<Move>& moves, int index) const;
+    static void getBishopMoves(const ChessBoard& chessBoard, std::vector<Move>& moves, int index);
 
     // Extend the move vector with the moves a rook can make on square index
-    void getRookMoves(std::vector<Move>& moves, int index) const;
+    static void getRookMoves(const ChessBoard& chessBoard, std::vector<Move>& moves, int index);
 
     // Extend the move vector with the moves a queen can make on square index
-    void getQueenMoves(std::vector<Move>& moves, int index) const;
+    static void getQueenMoves(const ChessBoard& chessBoard, std::vector<Move>& moves, int index);
 
     // Extend the move vector with the moves a king can make on square index
-    void getKingMoves(std::vector<Move>& moves, int index) const;
+    static void getKingMoves(const ChessBoard& chessBoard, std::vector<Move>& moves, int index);
 
     // Helper function that updates the move vector for the given target coordinates.
     // If target is out of bounds or the target square isn't empty, the flag is set to false.
     // The move is only added if the target square is in bounds and the target square has a different
     // color than the index color.
-    void canMove(int index, int x, int y, Color color, std::vector<Move>& moves, bool& flag) const;
+    static void canMove(const ChessBoard& chessBoard, int index, int x, int y, Color color, std::vector<Move>& moves, bool& flag);
 
     // Adds castling moves to moves vector if the given king can castle either long or short
-    void canCastle(std::vector<Move>& moves, int index) const;
+    static void canCastle(const ChessBoard& chessBoard, std::vector<Move>& moves, int index);
 
     // Attempts to castle, returns true if successful, false otherwise
-    bool attemptCastling(const Move &move);
+    static bool attemptCastling(ChessBoard& chessBoard, const Move &move);
 
     // If king or rook makes a non-castle move, invalidates castling rights accordingly.
-    void invalidateCastling(const Move& move);
+    static void invalidateCastling(ChessBoard& chessBoard, const Move& move);
 };
 
 

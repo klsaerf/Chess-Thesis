@@ -56,12 +56,13 @@ int coordinateToIndex(const std::string& coord) {
 int main() {
 
     ChessBoard board;
+    ChessBoardFunctions::initBoard(board);
 
     std::string input;
 
     // Main loop
     while (true) {
-        board.printBoard();
+        ChessBoardFunctions::printBoard(board);
         std::cout << std::endl;
         std::cout << "Enter move (q to exit): ";
         getline(std::cin, input);
@@ -85,7 +86,7 @@ int main() {
 
         const Move move(begin, end);
 
-        bool isMoveMade = board.makeMove(move);
+        bool isMoveMade = ChessBoardFunctions::makeMove(board, move);
 
         if (!isMoveMade) {
             std::cout << "No move could be made" << std::endl;

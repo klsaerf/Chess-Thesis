@@ -65,14 +65,13 @@ const std::vector<int> BLACK_PAWN_CENTRALITY = {
 // Handles the evaluation of the board
 class Evaluator {
 public:
-    Evaluator() = default;
-    virtual ~Evaluator() = default;
+    Evaluator() = delete;
 
     // Evaluates the board.
     // The evaluation is measured as a metric of both available pieces on the board,
     // and the centrality of those pieces.
     // A positive eval means the board is in White's favor, and a negative eval means Black's favor.
-    static int evaluate(const ChessBoard& chess_board);
+    static int evaluate(const ChessBoard& chessBoard);
 };
 
 
