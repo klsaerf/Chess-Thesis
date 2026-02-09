@@ -6,6 +6,10 @@
 #include <cctype>
 
 int Evaluator::evaluate(const ChessBoard &chessBoard) {
+    const Color gameOver = ChessBoardFunctions::isGameOver(chessBoard);
+
+    if (gameOver != EMPTY) return gameOver == WHITE ? WHITE_WIN : BLACK_WIN;
+
     int evaluation = 0;
 
     // Loop through all pieces, add to eval if white, subtract if black

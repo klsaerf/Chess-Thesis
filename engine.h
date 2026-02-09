@@ -9,6 +9,10 @@
 #include "evaluator.h"
 
 class Engine {
+public:
+    Engine() = delete;
+
+    static std::pair<Move, int> minimax(const ChessBoard &chessBoard, int depth, Color color);
 };
 
 

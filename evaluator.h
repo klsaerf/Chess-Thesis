@@ -7,6 +7,9 @@
 
 #include "chessboard.h"
 
+constexpr int WHITE_WIN = 10000;
+constexpr int BLACK_WIN = -10000;
+
 // Constants for pieces weights (points)
 constexpr int PAWN_WEIGHT = 10;
 constexpr int KNIGHT_WEIGHT = 30;

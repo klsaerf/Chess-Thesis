@@ -21,6 +21,7 @@ constexpr Move WHITE_CASTLE_SHORT(4, BOARD_SIZE);
 constexpr Move WHITE_CASTLE_LONG(4, BOARD_SIZE + 1);
 constexpr Move BLACK_CASTLE_SHORT(60, BOARD_SIZE);
 constexpr Move BLACK_CASTLE_LONG(60, BOARD_SIZE + 1);
+constexpr Move NO_MOVE(0, 0);
 
 // Color of the pieces
 enum Color { WHITE, BLACK, EMPTY };
@@ -68,7 +69,13 @@ public:
     static bool makeMove(ChessBoard& chessBoard, const Move& move);
 
     // Gets all the available moves on the board.
-    static void getAvailableMoves(const ChessBoard& chessBoard, std::vector<Move>& moves);
+    static void getAvailableMoves(const ChessBoard& chessBoard, std::vector<Move>& moves, Color color);
+
+    // Return the current game state as Color.
+    // If white wins -> WHITE,
+    // If black wins -> BLACK,
+    // If the game is ongoing -> EMPTY.
+    static Color isGameOver(const ChessBoard& chessBoard);
 
 private:
     // -- Private functions for retrieving the possible moves of the given piece. --

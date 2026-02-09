@@ -146,9 +146,12 @@ bool ChessBoardFunctions::makeMove(ChessBoard& chessBoard, const Move& move) {
     return true;
 }
 
-void ChessBoardFunctions::getAvailableMoves(const ChessBoard& chessBoard, std::vector<Move>& moves) {
+void ChessBoardFunctions::getAvailableMoves(const ChessBoard& chessBoard, std::vector<Move>& moves, const Color color) {
     for (int i = 0; i < BOARD_SIZE; i++) {
-        switch (const char piece = chessBoard.board.at(i); toupper(piece)) {
+        const char piece = chessBoard.board.at(i);
+        if (getColor(piece) != color) continue;
+
+        switch (toupper(piece)) {
             case 'P':
                 getPawnMoves(chessBoard, moves, i);
                 break;
@@ -171,6 +174,21 @@ void ChessBoardFunctions::getAvailableMoves(const ChessBoard& chessBoard, std::v
                 break;
         }
     }
+}
+
+Color ChessBoardFunctions::isGameOver(const ChessBoard &chessBoard) {
+    // If the white king is missing, black wins
+    const auto foundWhiteKing =
+        std::ranges::find(chessBoard.board, 'K');
+    if (foundWhiteKing == chessBoard.board.end()) return BLACK;
+
+    // Vice versa for black
+    const auto foundBlackKing =
+        std::ranges::find(chessBoard.board, 'k');
+    if (foundBlackKing == chessBoard.board.end()) return WHITE;
+
+    // Both kings present -> game continues
+    return EMPTY;
 }
 
 void ChessBoardFunctions::getPawnMoves(const ChessBoard& chessBoard, std::vector<Move>& moves, const int index) {
