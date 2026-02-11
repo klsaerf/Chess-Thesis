@@ -83,7 +83,7 @@ void ChessBoardFunctions::printBoard(const ChessBoard& chessBoard) {
     std::cout << std::endl;
 }
 
-bool ChessBoardFunctions::makeMove(ChessBoard& chessBoard, const Move& move) {
+bool ChessBoardFunctions::makeMove(ChessBoard& chessBoard, const Move& move, const Color turn) {
     const int begin = move.first;
     const int end = move.second;
     // If the begin or end is less than 0, that means the coords inputted were faulty.
@@ -92,8 +92,8 @@ bool ChessBoardFunctions::makeMove(ChessBoard& chessBoard, const Move& move) {
         return false;
     }
 
-    // An empty piece cannot move
-    if (chessBoard.board.at(begin) == '0') {
+    // A piece of different color of turn cannot move
+    if (const Color color = getColor(chessBoard.board.at(begin)); color != turn) {
         return false;
     }
 
