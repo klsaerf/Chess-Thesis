@@ -17,6 +17,11 @@ public:
     // Traverses all possible move orders, chooses the best move for both players.
     // Returns the maximizing move for its color.
     static std::pair<Move, int> minimax(const ChessBoard &chessBoard, int depth, Color color);
+
+    // Parallelized minimax algorithm
+    // Traverses all possible move orders, chooses the best move for both players.
+    // Returns the maximizing move for its color.
+    static std::pair<Move, int> parallelMinimax(const ChessBoard &chessBoard, int depth, Color color);
 };
 
 

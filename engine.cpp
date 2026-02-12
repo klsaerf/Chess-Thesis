@@ -6,8 +6,15 @@
 #include "evaluator.h"
 
 std::pair<Move, int> Engine::minimax(const ChessBoard &chessBoard, const int depth, const Color color) {
-    // Base recursion step, also if the game is over, return without checking deeper
-    if (ChessBoardFunctions::isGameOver(chessBoard) != EMPTY || depth == 0) {
+    // If the game is over, return without checking deeper
+    const Color gameOver = ChessBoardFunctions::isGameOver(chessBoard);
+    if (gameOver != EMPTY) {
+        // Add depth information to a winning move, so a faster checkmate is preferred
+        const int winEval = gameOver == WHITE ? WHITE_WIN + depth : BLACK_WIN - depth;
+        return {NO_MOVE, winEval};
+    }
+    // Base recursion step
+    if (depth == 0) {
         return {NO_MOVE, Evaluator::evaluate(chessBoard)};
     }
 
@@ -61,6 +68,83 @@ std::pair<Move, int> Engine::minimax(const ChessBoard &chessBoard, const int dep
 
             // Restore previous chessBoard
             previous = chessBoard;
+        }
+    }
+
+    return bestMove;
+}
+
+std::pair<Move, int> Engine::parallelMinimax(const ChessBoard &chessBoard, int depth, Color color) {
+    // If the game is over, return without checking deeper
+    const Color gameOver = ChessBoardFunctions::isGameOver(chessBoard);
+    if (gameOver != EMPTY) {
+        // Add depth information to a winning move, so a faster checkmate is preferred
+        const int winEval = gameOver == WHITE ? WHITE_WIN + depth : BLACK_WIN - depth;
+        return {NO_MOVE, winEval};
+    }
+    // Base recursion step
+    if (depth == 0) {
+        return {NO_MOVE, Evaluator::evaluate(chessBoard)};
+    }
+
+    // Tracks the best move for the current depth
+    std::pair<Move, int> bestMove;
+
+    // The moves to be made into the next depth
+    std::vector<Move> moves;
+    ChessBoardFunctions::getAvailableMoves(chessBoard, moves, color);
+
+    // White color base
+    if (color == WHITE) {
+        // Initialize with worst move for white -> black win
+        bestMove = {NO_MOVE, BLACK_WIN};
+
+        // OpenMP parallelism
+        // bestMove is shared among threads, while all the other variables are kept (first)private
+        #pragma omp parallel for default(none) firstprivate(moves, depth, color, chessBoard) shared(bestMove)
+        for (Move move : moves) {
+            // Copy of the board as to not mess with other moves
+            ChessBoard previous = chessBoard;
+            ChessBoardFunctions::makeMove(previous, move, color);
+            const std::pair<Move, int> newBest = {move, parallelMinimax(previous, depth - 1, BLACK).second};
+
+            // Critical section, avoiding race condition
+            // Here, if two moves share the same eval, the first one to reach will update,
+            // since the second one will fail the if check.
+            // This makes it so in the early game, the engine plays a little more unpredictably.
+            #pragma omp critical
+            {
+                // If white's move is better than the current best, update it
+                if (newBest.second > bestMove.second) {
+                    bestMove = newBest;
+                }
+            }
+        }
+
+    } else if (color == BLACK) {
+        // Initialize with worst move for black -> white win
+        bestMove = {NO_MOVE, WHITE_WIN};
+
+        // OpenMP parallelism
+        // bestMove is shared among threads, while all the other variables are kept (first)private
+        #pragma omp parallel for default(none) firstprivate(moves, depth, color, chessBoard) shared(bestMove)
+        for (Move move : moves) {
+            // Copy of the board as to not mess with other moves
+            ChessBoard previous = chessBoard;
+            ChessBoardFunctions::makeMove(previous, move, color);
+            const std::pair<Move, int> newBest = {move, parallelMinimax(previous, depth - 1, WHITE).second};
+
+            // Critical section, avoiding race condition
+            // Here, if two moves share the same eval, the first one to reach will update,
+            // since the second one will fail the if check.
+            // This makes it so in the early game, the engine plays a little more unpredictably.
+            #pragma omp critical
+            {
+                // If black's move is better than the current best, update it
+                if (newBest.second < bestMove.second) {
+                    bestMove = newBest;
+                }
+            }
         }
     }
 

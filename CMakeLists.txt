@@ -11,3 +11,6 @@ add_executable(chess_thesis main.cpp
         evaluator.cpp
         evaluator.h
 )
+
+find_package(OpenMP REQUIRED)
+target_link_libraries(chess_thesis OpenMP::OpenMP_CXX)

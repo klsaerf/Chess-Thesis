@@ -65,9 +65,30 @@ std::string indexToCoordinate(const int index) {
 }
 
 
+// Benchmark the given engine
+// Returns the engine's move for the board.
+Move benchmarkEngine(const ChessBoard& board, const int depth, const Color engineColor,
+                     std::pair<Move, int> (*engine)(const ChessBoard&, int, Color)) {
+    // Start the timer for the engine's move
+    const auto now = std::chrono::high_resolution_clock::now();
+
+    const auto [move, _] = engine(board, depth, engineColor);
+    // Measure the elapsed time and print it to console
+    const auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - now);
+    std::cout << duration.count() << " ms to think" << std::endl;
+
+    return move;
+}
+
+// Make the engine's move and print it to console
+void makeEngineMove(ChessBoard& board, const Move& move, const Color engineColor) {
+    ChessBoardFunctions::makeMove(board, move, engineColor);
+    std::cout << "The bot played " << indexToCoordinate(move.first)
+    << " to " << indexToCoordinate(move.second) << std::endl;
+}
+
 // Main function of the program.
 int main() {
-
     ChessBoard board;
     ChessBoardFunctions::initBoard(board);
 
@@ -77,7 +98,9 @@ int main() {
 
     std::string input;
 
-    // Parse the player's color
+    std::pair<Move, int>(*engine)(const ChessBoard&, int, Color) = Engine::parallelMinimax;
+
+    // Get the player's color
     while (true) {
         std::cout << "Enter the color to play (w/b): ";
 
@@ -94,7 +117,7 @@ int main() {
         }
     }
 
-    // Parse the engine depth
+    // Get the engine depth
     while (true) {
         std::cout << "Enter depth for engine: ";
         getline(std::cin, input);
@@ -109,18 +132,8 @@ int main() {
 
     // If the engine has white pieces, start with its move
     if (engineColor == WHITE) {
-        // Start the timer for the engine's move
-        auto now = std::chrono::high_resolution_clock::now();
-
-        const std::pair<Move, int> engine = Engine::minimax(board, depth, engineColor);
-        // Measure the elapsed time and print it to console
-        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - now);
-        std::cout << duration.count() << " ms to think" << std::endl;
-
-        // Make the engine's move and print it to console
-        ChessBoardFunctions::makeMove(board, engine.first, engineColor);
-        std::cout << "The bot played " << indexToCoordinate(engine.first.first)
-        << " to " << indexToCoordinate(engine.first.second) << std::endl;
+        const Move engineMove = benchmarkEngine(board, depth, engineColor, engine);
+        makeEngineMove(board, engineMove, engineColor);
     }
 
 
@@ -136,9 +149,8 @@ int main() {
             break;
         }
 
-        Move move;
-
         // Castling inputs
+        Move move;
         if (input == "O-O") {
             move = playerColor == WHITE ? WHITE_CASTLE_SHORT : BLACK_CASTLE_SHORT;
         } else if (input == "0-0-0") {
@@ -165,19 +177,8 @@ int main() {
             continue;
         }
 
-        // Start the timer for the engine's move
-        auto now = std::chrono::high_resolution_clock::now();
-
-        const std::pair<Move, int> engine = Engine::minimax(board, depth, engineColor);
-        // Measure the elapsed time and print it to console
-        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - now);
-        std::cout << duration.count() << " ms to think" << std::endl;
-
-        // Make the engine's move and print it to console
-        ChessBoardFunctions::makeMove(board, engine.first, engineColor);
-        std::cout << "The bot played " << indexToCoordinate(engine.first.first)
-        << " to " << indexToCoordinate(engine.first.second) << std::endl;
-
+        const Move engineMove = benchmarkEngine(board, depth, engineColor, engine);
+        makeEngineMove(board, engineMove, engineColor);
     }
 
     return 0;
