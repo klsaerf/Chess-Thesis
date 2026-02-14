@@ -98,7 +98,7 @@ int main() {
 
     std::string input;
 
-    std::pair<Move, int>(*engine)(const ChessBoard&, int, Color) = Engine::parallelMinimax;
+    std::pair<Move, int>(*engine)(const ChessBoard&, int, Color) = Engine::parallelAlphabeta;
 
     // Get the player's color
     while (true) {
