@@ -124,7 +124,12 @@ int main() {
 
         try {
             depth = std::stoi(input);
+
+            if (depth <= 0) {
+                throw std::invalid_argument("Invalid depth");
+            }
         } catch (const std::exception& e) {
+            std::cout << "Please enter a non-negative integer number." << std::endl;
             continue;
         }
         break;
@@ -139,6 +144,11 @@ int main() {
 
     // Main loop
     while (true) {
+        if (const Color winningColor = ChessBoardFunctions::isGameOver(board); winningColor != EMPTY) {
+            std::cout << (winningColor == WHITE ? "White" : "Black") << " won, game over!" << std::endl;
+            break;
+        }
+
         ChessBoardFunctions::printBoard(board);
         std::cout << std::endl;
         std::cout << "Enter move (q to exit): ";
@@ -171,13 +181,21 @@ int main() {
             move = {begin, end};
         }
 
-        // Attempt to make a move, if not successful,
+        // Attempt to make a move
         if (const bool isMoveMade = ChessBoardFunctions::makeMove(board, move, playerColor); !isMoveMade) {
             std::cout << "No move could be made" << std::endl;
             continue;
         }
 
         const Move engineMove = benchmarkEngine(board, depth, engineColor, engine);
+
+        // If the engine cannot find a better move than the default NO_MOVE,
+        // it means all paths lead to its eventual checkmate, thus resigning
+        if (engineMove == NO_MOVE) {
+            std::cout << "The bot resigns, game over!" << std::endl;
+            break;
+        }
+
         makeEngineMove(board, engineMove, engineColor);
     }
 
