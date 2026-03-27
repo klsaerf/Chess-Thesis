@@ -6,6 +6,7 @@
 #define CHESS_THESIS_ENGINE_H
 
 #include "chessboard.h"
+#include <random>
 
 // Engine class
 // Returns the best move for the given algorithm
@@ -38,6 +39,9 @@ private:
     // parametered function into private field with the normal parameter sized overloaded function in the
     // public field is sensible.
     static std::pair<Move, int> alphabeta(const ChessBoard &chessBoard, int depth, Color color, int alpha, int beta);
+
+    inline static std::random_device rd;
+    inline static std::mt19937 gen = std::mt19937(rd());
 };
 
 

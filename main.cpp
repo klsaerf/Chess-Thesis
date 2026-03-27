@@ -83,6 +83,13 @@ Move benchmarkEngine(const ChessBoard& board, const int depth, const Color engin
 // Make the engine's move and print it to console
 void makeEngineMove(ChessBoard& board, const Move& move, const Color engineColor) {
     ChessBoardFunctions::makeMove(board, move, engineColor);
+    if (move == WHITE_CASTLE_SHORT || move == BLACK_CASTLE_SHORT) {
+        std::cout << "The bot played short castle" << std::endl;
+    }
+    if (move == WHITE_CASTLE_LONG || move == BLACK_CASTLE_LONG) {
+        std::cout << "The bot played long castle" << std::endl;
+    }
+
     std::cout << "The bot played " << indexToCoordinate(move.first)
     << " to " << indexToCoordinate(move.second) << std::endl;
 }

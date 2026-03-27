@@ -43,5 +43,19 @@ int Evaluator::evaluate(const ChessBoard &chessBoard) {
         }
     }
 
+    std::vector<Move> moves;
+    ChessBoardFunctions::getAvailableMoves(chessBoard, moves, WHITE);
+    for (Move& move : moves) {
+        if (move == WHITE_CASTLE_SHORT || move == WHITE_CASTLE_LONG) continue;
+        evaluation += PIECE_CENTRALITY.at(move.second);
+    }
+
+    moves.clear();
+    ChessBoardFunctions::getAvailableMoves(chessBoard, moves, BLACK);
+    for (Move& move : moves) {
+        if (move == BLACK_CASTLE_SHORT || move == BLACK_CASTLE_LONG) continue;
+        evaluation -= PIECE_CENTRALITY.at(move.second);
+    }
+
     return evaluation;
 }

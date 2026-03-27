@@ -4,6 +4,7 @@
  */
 #include "engine.h"
 #include "evaluator.h"
+#include <algorithm>
 
 std::pair<Move, int> Engine::minimax(const ChessBoard &chessBoard, const int depth, const Color color) {
     // If the game is over, return without checking deeper
@@ -228,6 +229,10 @@ std::pair<Move, int> Engine::alphabeta(const ChessBoard &chessBoard, const int d
     // The moves to be made into the next depth
     std::vector<Move> moves;
     ChessBoardFunctions::getAvailableMoves(chessBoard, moves, color);
+
+    // Shuffle the array so the better moves have a higher chance of being in front of the vector,
+    // resulting in a speedup due to pruning more branches, especially on higher depths
+    std::ranges::shuffle(moves, gen);
 
     // White color base
     if (color == WHITE) {
