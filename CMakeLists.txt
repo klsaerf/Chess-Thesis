@@ -1,16 +1,9 @@
 cmake_minimum_required(VERSION 4.1)
-project(chess_thesis)
+project(ChessThesis LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 23)
 
-add_executable(chess_thesis main.cpp
-        chessboard.cpp
-        chessboard.h
-        engine.cpp
-        engine.h
-        evaluator.cpp
-        evaluator.h
-)
+enable_testing()
 
-find_package(OpenMP REQUIRED)
-target_link_libraries(chess_thesis OpenMP::OpenMP_CXX)
+add_subdirectory(src)
+add_subdirectory(test)

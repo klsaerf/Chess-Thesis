@@ -75,7 +75,7 @@ Move benchmarkEngine(const ChessBoard& board, const int depth, const Color engin
     const auto [move, _] = engine(board, depth, engineColor);
     // Measure the elapsed time and print it to console
     const auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - now);
-    std::cout << duration.count() << " ms to think" << std::endl;
+    std::cout << duration.count() << " ms to calculate" << std::endl;
 
     return move;
 }
@@ -131,10 +131,7 @@ int main() {
 
         try {
             depth = std::stoi(input);
-
-            if (depth <= 0) {
-                throw std::invalid_argument("Invalid depth");
-            }
+            if (depth <= 0) throw std::invalid_argument("Invalid depth");
         } catch (const std::exception& e) {
             std::cout << "Please enter a non-negative integer number." << std::endl;
             continue;
