@@ -23,25 +23,48 @@ long long benchmarkEngine(const ChessBoard& board, const int depth, const Color 
     return duration.count();
 }
 
-void printTime(const long long time, const std::string& funcName) {
+void printTime(const std::string& time, const std::string& funcName) {
     std::cout << time << " ms for " << funcName << std::endl;
 }
 
+double getMean(const std::vector<long long>& arr) {
+    double sum = 0;
+
+    for (const auto a: arr) {
+        sum += static_cast<double>(a);
+    }
+
+    return sum / static_cast<double>(arr.size());
+}
+
+double getStdDev(const std::vector<long long>& arr, const double mean) {
+    double sum = 0;
+
+    for (const auto a: arr) {
+        sum += std::pow((static_cast<double>(a) - mean), 2);
+    }
+
+    return std::sqrt(sum / static_cast<double>(arr.size()));
+}
+
 // Repeats the engine move for a specified amount of time and returns the average
-long long repeatTest(const ChessBoard& board, const int depth, const int repeat, const bool verbose,
+std::string repeatTest(const ChessBoard& board, const int depth, const int repeat, const bool verbose,
     std::pair<Move, int> (*engine)(const ChessBoard&, int, Color)) {
-    long long time = 0;
+    std::vector<long long> time;
 
     for (int i = 0; i < repeat; i++) {
         if (i % 5 == 0 && verbose) std::cout << i << "/" << repeat << " done" << std::endl;
 
-        time += benchmarkEngine(board, depth, WHITE, engine);
+        time.push_back(benchmarkEngine(board, depth, WHITE, engine));
     }
     if (verbose) std::cout << repeat << "/" << repeat << " done" << std::endl;
 
-    time /= repeat;
+    double mean = getMean(time);
+    double stdDev = getStdDev(time, mean);
 
-    return time;
+    std::string timeStr = std::to_string(mean) + " mean " + std::to_string(stdDev) + " std dev";
+
+    return timeStr;
 }
 
 int main(int argc, char* argv[]) {
@@ -72,19 +95,19 @@ int main(int argc, char* argv[]) {
     std::cout << "--- Beginning repeated tests on all functions ---" << std::endl;
 
     std::pair<Move, int>(*minimaxEngine)(const ChessBoard&, int, Color) = Engine::minimax;
-    const long long minimaxTime = repeatTest(board, depth, repeat, verbose, minimaxEngine);
+    const std::string minimaxTime = repeatTest(board, depth, repeat, verbose, minimaxEngine);
     PRINT_TIME(minimaxTime, minimaxEngine);
 
     std::pair<Move, int>(*parallelMinimaxEngine)(const ChessBoard&, int, Color) = Engine::parallelMinimax;
-    const long long pMinimaxTime = repeatTest(board, depth, repeat, verbose, parallelMinimaxEngine);
+    const std::string pMinimaxTime = repeatTest(board, depth, repeat, verbose, parallelMinimaxEngine);
     PRINT_TIME(pMinimaxTime, parallelMinimaxEngine);
 
     std::pair<Move, int>(*alphabetaEngine)(const ChessBoard&, int, Color) = Engine::alphabeta;
-    const long long alphabetaTime = repeatTest(board, depth, repeat, verbose, alphabetaEngine);
+    const std::string alphabetaTime = repeatTest(board, depth, repeat, verbose, alphabetaEngine);
     PRINT_TIME(alphabetaTime, alphabetaEngine);
 
     std::pair<Move, int>(*parallelAlphabetaEngine)(const ChessBoard&, int, Color) = Engine::parallelAlphabeta;
-    const long long pAlphabetaTime = repeatTest(board, depth, repeat, verbose, parallelAlphabetaEngine);
+    const std::string pAlphabetaTime = repeatTest(board, depth, repeat, verbose, parallelAlphabetaEngine);
     PRINT_TIME(pAlphabetaTime, parallelAlphabetaEngine);
 
     return 0;

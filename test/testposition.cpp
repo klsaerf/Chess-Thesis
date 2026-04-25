@@ -76,11 +76,11 @@ int main(int argc, char* argv[]) {
 
     std::cout << "Deep Blue has played c2 e4" << std::endl;
 
-    /*
+
     std::pair<Move, int>(*parallelMinimaxEngine)(const ChessBoard&, int, Color) = Engine::parallelMinimax;
     const Move minimaxMove = benchmarkEngine(chessBoard, depth, WHITE, parallelMinimaxEngine);
     PRINT_MOVE(minimaxMove, parallelMinimaxEngine);
-    */
+
 
     std::pair<Move, int>(*parallelAlphabetaEngine)(const ChessBoard&, int, Color) = Engine::parallelAlphabeta;
     const Move alphabetaMove = benchmarkEngine(chessBoard, depth, WHITE, parallelAlphabetaEngine);
