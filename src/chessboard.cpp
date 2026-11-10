@@ -6,6 +6,7 @@
 #include "chessboard.h"
 #include <iostream>
 #include <utility>
+#include <algorithm>
 
 
 bool isInBounds(const int x, const int y) {

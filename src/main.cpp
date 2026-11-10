@@ -165,7 +165,7 @@ int main() {
 
         // Castling inputs
         Move move;
-        if (input == "O-O") {
+        if (input == "0-0") {
             move = playerColor == WHITE ? WHITE_CASTLE_SHORT : BLACK_CASTLE_SHORT;
         } else if (input == "0-0-0") {
             move = playerColor == WHITE ? WHITE_CASTLE_LONG : BLACK_CASTLE_LONG;
